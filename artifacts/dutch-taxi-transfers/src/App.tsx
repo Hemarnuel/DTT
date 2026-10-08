@@ -4,6 +4,12 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
+import { Header } from '@/components/Header';
+import { Hero } from '@/components/Hero';
+import { BookingWidget } from '@/components/BookingWidget';
+import { ServiceCategories } from '@/components/ServiceCategories';
+import { TrustSection } from '@/components/TrustSection';
+import { business } from '@/components/business-content';
 import {
   Route,
   Switch,
@@ -15,15 +21,22 @@ const queryClient = new QueryClient();
 
 function Home() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Replit Agent is building...
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Your app will appear here once it's ready.
-        </p>
-      </div>
+    <div className="site-shell">
+      <Header />
+      <main>
+        <Hero />
+        <BookingWidget />
+        <ServiceCategories />
+        <TrustSection />
+      </main>
+      <footer className="site-footer">
+        <div className="footer-inner">
+          <a className="footer-brand" href="#top">{business.name}</a>
+          <p>{business.footerCopy}</p>
+          <a href={business.phoneLink}>{business.phoneDisplay}</a>
+          <span>{business.footerRegion}</span>
+        </div>
+      </footer>
     </div>
   );
 }
