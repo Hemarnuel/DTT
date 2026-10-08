@@ -8,7 +8,7 @@ export function TrustSection() {
         <span className="section-kicker">{business.trust.eyebrow}</span>
         <h2 id="trust-title">{business.trust.titleLead}<br />{business.trust.titleAccent}</h2>
         <p>{business.trust.description}</p>
-        <a className="text-link" href={business.phoneLink}>{business.trust.contactAction} <ArrowUpRight size={15} /></a>
+         <a className="text-link" href={business.phoneLink} data-testid="link-trust-phone">{business.trust.contactAction} <ArrowUpRight size={15} /></a>
       </div>
       <div className="trust-right">
         <div className="trust-quiet-card">
@@ -23,7 +23,7 @@ export function TrustSection() {
           ) : (
             <div className="review-pending"><span className="review-mark">“</span><span>{business.trust.pendingReviewCopy}</span></div>
           )}
-          <a href={business.trust.reviewsUrl} target="_blank" rel="noreferrer">{business.trust.reviewsAction} <ArrowUpRight size={14} /></a>
+           <a href={business.trust.reviewsUrl} target="_blank" rel="noreferrer" data-testid="link-google-reviews">{business.trust.reviewsAction} <ArrowUpRight size={14} /></a>
           <small className="review-disclaimer">{reviewSummary.rating ? `Review data: ${reviewSummary.source ?? 'verified source'}` : business.trust.reviewDisclosure}</small>
         </div>
       </div>

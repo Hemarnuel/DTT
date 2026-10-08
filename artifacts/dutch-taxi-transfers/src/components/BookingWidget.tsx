@@ -52,7 +52,7 @@ export function BookingWidget() {
               <p>{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(pickupAt))} · {passengers} passenger{passengers === '1' ? '' : 's'} · {luggage} suitcase{luggage === '1' ? '' : 's'}</p>
               <p>{business.booking.handoffMessage}</p>
             </div>
-            <a href={business.phoneLink}>{business.booking.handoffAction} <ArrowRight size={14} /></a>
+             <a href={business.phoneLink} data-testid="link-booking-phone-handoff">{business.booking.handoffAction} <ArrowRight size={14} /></a>
           </div>
         )}
         <p className="booking-footnote">{business.booking.footnote}</p>
