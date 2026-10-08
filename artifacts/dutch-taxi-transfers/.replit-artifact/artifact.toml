@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Dutch Taxi Transfers"
+description = "A premium homepage for Dutch Taxi Transfers, helping business travellers, airport passengers, families, and private groups book reliable transfers across Schiphol, Amsterdam, and the Netherlands."
+version = "1.0.0"
+id = "artifacts/dutch-taxi-transfers"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22720
+
+[services.development]
+run = "pnpm --filter @workspace/dutch-taxi-transfers run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dutch-taxi-transfers", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/dutch-taxi-transfers/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22720"
+BASE_PATH = "/"
