@@ -47,7 +47,7 @@ router.post("/v1/payments/demo-confirm", async (req: Request, res: Response, nex
 
     return res.json({ booking_reference, payment_id: paymentId, status: "paid" });
   } catch (err) {
-    retrun next(err);
+    return next(err);
   }
 });
 
