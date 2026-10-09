@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "api-server": {
+      "root": "artifacts/api-server",
+      "framework": "express"
+    },
+    "dutch-taxi-transfers": {
+      "root": "artifacts/dutch-taxi-transfers",
+      "framework": "vite",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "api-server",
+          "format": "url",
+          "env": "VITE_API_URL"
+        }
+      ]
+    },
+    "mockup-sandbox": {
+      "root": "artifacts/mockup-sandbox",
+      "framework": "vite"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": { "service": "api-server" } },
+    { "source": "/(.*)", "destination": { "service": "dutch-taxi-transfers" } }
+  ]
+}

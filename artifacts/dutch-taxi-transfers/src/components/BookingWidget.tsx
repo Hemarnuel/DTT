@@ -97,7 +97,8 @@ export function BookingWidget() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/v1/bookings', {
+      const apiBase = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(new URL('/api/v1/bookings', apiBase).toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -118,7 +119,7 @@ export function BookingWidget() {
       if (!response.ok) throw new Error('Booking could not be created');
       const created = await response.json() as BookingResponse;
       setBooking(created);
-      const paymentResponse = await fetch('/api/v1/payments/demo-confirm', {
+      const paymentResponse = await fetch(new URL('/api/v1/payments/demo-confirm', apiBase).toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ booking_reference: created.booking_reference }),
