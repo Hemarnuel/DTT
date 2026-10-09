@@ -105,7 +105,7 @@ router.post("/v1/webhooks/payment-confirm", async (req: Request, res: Response, 
       booking_reference: reference,
     });
   } catch (error) {
-    retrun next(error);
+    return next(error);
   }
 });
 
