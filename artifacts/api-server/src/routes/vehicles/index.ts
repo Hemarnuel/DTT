@@ -1,11 +1,11 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { db } from "@workspace/db";
 import { vehiclesTable } from "@workspace/db/schema";
 import { eq, and } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-router.get("/v1/vehicles", async (req, res) => {
+router.get("/v1/vehicles", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { vehicleClass } = req.query;
 
@@ -27,13 +27,9 @@ router.get("/v1/vehicles", async (req, res) => {
       .from(vehiclesTable)
       .where(eq(vehiclesTable.isActive, true));
 
-    res.json({ vehicles });
+    return res.json({ vehicles });
   } catch (error) {
-    console.error("Error fetching vehicles:", error);
-    res.status(500).json({
-      error: "InternalServerError",
-      message: "Failed to fetch vehicles",
-    });
+    next(error);
   }
 });
 

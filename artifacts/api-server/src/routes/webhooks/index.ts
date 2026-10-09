@@ -1,4 +1,4 @@
-import { Router, type IRouter, type Request, type Response } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { db } from "@workspace/db";
 import { bookingsTable, paymentsTable, invoicesTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
@@ -13,7 +13,7 @@ function generateInvoiceNumber(): string {
   return `INV-${year}-${timestamp}`;
 }
 
-router.post("/v1/webhooks/payment-confirm", async (req: Request, res: Response) => {
+router.post("/v1/webhooks/payment-confirm", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       provider,
@@ -96,16 +96,12 @@ router.post("/v1/webhooks/payment-confirm", async (req: Request, res: Response) 
       await sendBookingEmails({ ...booking, status: "paid", paymentStatus: "paid", confirmedAt: new Date() }, invoiceNumber, invoiceText);
     }
 
-    res.json({
+    return res.json({
       received: true,
       booking_reference,
     });
   } catch (error) {
-    console.error("Error processing webhook:", error);
-    res.status(500).json({
-      error: "InternalServerError",
-      message: "Failed to process webhook",
-    });
+    next(error);
   }
 });
 
