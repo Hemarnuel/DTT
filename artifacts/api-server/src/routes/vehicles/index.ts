@@ -29,7 +29,7 @@ router.get("/v1/vehicles", async (req: Request, res: Response, next: NextFunctio
 
     return res.json({ vehicles });
   } catch (error) {
-    next(error);
+    retrun next(error);
   }
 });
 
