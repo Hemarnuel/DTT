@@ -2,12 +2,13 @@ import { Router, type IRouter, type Request, type Response, type NextFunction } 
 import { db } from "@workspace/db";
 import { bookingsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import { param } from "../../lib/params";
 
 const router: IRouter = Router();
 
 router.post("/v1/payments/demo-confirm", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const booking_reference = req.body.booking_reference as string | undefined;
+    const booking_reference = param(req.body.booking_reference);
 
     if (!booking_reference) {
       return res.status(400).json({ error: "ValidationError", message: "booking_reference is required" });
@@ -46,8 +47,8 @@ router.post("/v1/payments/demo-confirm", async (req: Request, res: Response, nex
     }
 
     return res.json({ booking_reference, payment_id: paymentId, status: "paid" });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    return next(error);
   }
 });
 
