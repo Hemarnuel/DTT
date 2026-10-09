@@ -1,10 +1,9 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { randomUUID } from "node:crypto";
 import { db } from "@workspace/db";
-import { bookingsTable } from "@workspace/db/schema";
+import { bookingsTable, vehicleClassEnum } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { createPaymentSession } from "../../services/payment";
-import { param } from "../../lib/params";
 
 const router: IRouter = Router();
 
@@ -50,8 +49,8 @@ async function createBooking(req: Request, res: Response, next: NextFunction) {
         pickupDatetime: new Date(pickup_datetime),
         passengers: passengers || 1,
         luggageCount: luggage_count || 0,
-        vehicleClass: param(vehicle_class),
-        flightNumber: param(flight_number),
+        vehicleClass: vehicle_class as (typeof vehicleClassEnum.enumValues)[number],
+        flightNumber: flight_number ?? undefined,
         customerFirstName: customer.first_name,
         customerLastName: customer.last_name,
         customerEmail: customer.email,
