@@ -1,4 +1,4 @@
-import { Router, type IRouter, type Request, type Response } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { randomUUID } from "node:crypto";
 import { db } from "@workspace/db";
 import { bookingsTable } from "@workspace/db/schema";
@@ -86,11 +86,12 @@ router.post("/v1/bookings/create", createBooking);
 router.get("/v1/bookings/:bookingReference", async (req: Request, res: Response) => {
   try {
     const { bookingReference } = req.params;
+    const reference = typeof bookingReference === "string" ? bookingReference : "";
 
     const [booking] = await db
       .select()
       .from(bookingsTable)
-      .where(eq(bookingsTable.bookingReference, bookingReference))
+      .where(eq(bookingsTable.bookingReference, reference))
       .limit(1);
 
     if (!booking) {
@@ -100,7 +101,7 @@ router.get("/v1/bookings/:bookingReference", async (req: Request, res: Response)
       });
     }
 
-    res.json({
+    return res.json({
       id: booking.id,
       booking_reference: booking.bookingReference,
       service_type: booking.serviceType,
@@ -124,11 +125,7 @@ router.get("/v1/bookings/:bookingReference", async (req: Request, res: Response)
       confirmed_at: booking.confirmedAt?.toISOString(),
     });
   } catch (error) {
-    console.error("Error fetching booking:", error);
-    res.status(500).json({
-      error: "InternalServerError",
-      message: "Failed to fetch booking",
-    });
+    next(error);
   }
 });
 

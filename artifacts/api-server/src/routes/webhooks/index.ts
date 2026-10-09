@@ -26,7 +26,11 @@ router.post("/v1/webhooks/payment-confirm", async (req: Request, res: Response, 
       metadata,
     } = req.body;
 
-    if (!booking_reference || !payment_id || !provider) {
+    const reference = typeof booking_reference === "string" ? booking_reference : "";
+    const paymentId = typeof payment_id === "string" ? payment_id : "";
+    const providerName = typeof provider === "string" ? provider : "";
+
+    if (!reference || !paymentId || !providerName) {
       return res.status(400).json({
         error: "ValidationError",
         message: "Missing required fields",
@@ -36,7 +40,7 @@ router.post("/v1/webhooks/payment-confirm", async (req: Request, res: Response, 
     const [booking] = await db
       .select()
       .from(bookingsTable)
-      .where(eq(bookingsTable.bookingReference, booking_reference))
+      .where(eq(bookingsTable.bookingReference, reference))
       .limit(1);
 
     if (!booking) {
@@ -98,7 +102,7 @@ router.post("/v1/webhooks/payment-confirm", async (req: Request, res: Response, 
 
     return res.json({
       received: true,
-      booking_reference,
+      booking_reference: reference,
     });
   } catch (error) {
     next(error);
