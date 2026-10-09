@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { bookingsTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { createPaymentSession } from "../../services/payment";
+import { param } from "../../lib/params";
 
 const router: IRouter = Router();
 
@@ -13,7 +14,7 @@ function generateBookingReference(): string {
   return `DTT-${timestamp}-${random}`;
 }
 
-async function createBooking(req: Request, res: Response) {
+async function createBooking(req: Request, res: Response, next: NextFunction) {
   try {
     const {
       service_type,
@@ -49,8 +50,8 @@ async function createBooking(req: Request, res: Response) {
         pickupDatetime: new Date(pickup_datetime),
         passengers: passengers || 1,
         luggageCount: luggage_count || 0,
-        vehicleClass: vehicle_class,
-        flightNumber: flight_number,
+        vehicleClass: param(vehicle_class),
+        flightNumber: param(flight_number),
         customerFirstName: customer.first_name,
         customerLastName: customer.last_name,
         customerEmail: customer.email,
@@ -65,25 +66,21 @@ async function createBooking(req: Request, res: Response) {
 
     const paymentSession = await createPaymentSession(booking);
 
-    res.status(201).json({
+    return res.status(201).json({
       booking_reference: booking.bookingReference,
       client_secret: paymentSession.clientSecret,
       payment_url: paymentSession.paymentUrl,
       status: booking.status,
     });
   } catch (error) {
-    console.error("Error creating booking:", error);
-    res.status(500).json({
-      error: "InternalServerError",
-      message: "Failed to create booking",
-    });
+    return next(error);
   }
 }
 
 router.post("/v1/bookings", createBooking);
 router.post("/v1/bookings/create", createBooking);
 
-router.get("/v1/bookings/:bookingReference", async (req: Request, res: Response) => {
+router.get("/v1/bookings/:bookingReference", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { bookingReference } = req.params;
     const reference = typeof bookingReference === "string" ? bookingReference : "";
@@ -125,7 +122,7 @@ router.get("/v1/bookings/:bookingReference", async (req: Request, res: Response)
       confirmed_at: booking.confirmedAt?.toISOString(),
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
