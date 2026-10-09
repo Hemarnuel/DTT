@@ -1,15 +1,20 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: API specification for Dutch Taxi Transfers
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: bookings
+    description: Booking operations
+  - name: vehicles
+    description: Vehicle catalog operations
+  - name: webhooks
+    description: Payment webhook endpoints
 paths:
   /healthz:
     get:
@@ -24,6 +29,102 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /v1/bookings:
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a new booking and initiate payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingRequest"
+      responses:
+        "201":
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateBookingResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/bookings/{bookingReference}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get booking by reference
+      parameters:
+        - name: bookingReference
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Booking found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+        "404":
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/vehicles:
+    get:
+      operationId: listVehicles
+      tags: [vehicles]
+      summary: List available vehicles
+      parameters:
+        - name: vehicleClass
+          in: query
+          schema:
+            type: string
+            enum: [economy, business, vip_chauffeur, van]
+      responses:
+        "200":
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleListResponse"
+  /v1/webhooks/payment-confirm:
+    post:
+      operationId: paymentWebhook
+      tags: [webhooks]
+      summary: Payment provider webhook (Stripe/Mollie)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentWebhookRequest"
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+        "400":
+          description: Invalid webhook
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +134,200 @@ components:
           type: string
       required:
         - status
-
+    CreateBookingRequest:
+      type: object
+      required:
+        - service_type
+        - pickup_location
+        - dropoff_location
+        - pickup_datetime
+        - passengers
+        - luggage_count
+        - vehicle_class
+        - customer
+        - total_amount
+        - currency
+      properties:
+        service_type:
+          type: string
+          enum: [airport_transfer, point_to_point, hourly, day_trip]
+        pickup_location:
+          type: string
+        dropoff_location:
+          type: string
+        pickup_datetime:
+          type: string
+          format: date-time
+        passengers:
+          type: integer
+          minimum: 1
+          maximum: 8
+        luggage_count:
+          type: integer
+          minimum: 0
+          maximum: 10
+        vehicle_class:
+          type: string
+          enum: [economy, business, vip_chauffeur, van]
+        flight_number:
+          type: string
+        customer:
+          type: object
+          required:
+            - first_name
+            - last_name
+            - email
+            - phone
+          properties:
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+              format: email
+            phone:
+              type: string
+        special_requests:
+          type: string
+        total_amount:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: EUR
+    CreateBookingResponse:
+      type: object
+      properties:
+        booking_reference:
+          type: string
+        client_secret:
+          type: string
+        payment_url:
+          type: string
+        status:
+          type: string
+    BookingResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        booking_reference:
+          type: string
+        service_type:
+          type: string
+        pickup_location:
+          type: string
+        dropoff_location:
+          type: string
+        pickup_datetime:
+          type: string
+          format: date-time
+        passengers:
+          type: integer
+        luggage_count:
+          type: integer
+        vehicle_class:
+          type: string
+        flight_number:
+          type: string
+        customer_first_name:
+          type: string
+        customer_last_name:
+          type: string
+        customer_email:
+          type: string
+        customer_phone:
+          type: string
+        special_requests:
+          type: string
+        total_amount:
+          type: number
+          format: float
+        currency:
+          type: string
+        status:
+          type: string
+        payment_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        confirmed_at:
+          type: string
+          format: date-time
+    VehicleListResponse:
+      type: object
+      properties:
+        vehicles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Vehicle"
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        vehicle_class:
+          type: string
+        capacity_passengers:
+          type: integer
+        capacity_luggage:
+          type: integer
+        base_price_per_km:
+          type: number
+          format: float
+        fixed_price_airport:
+          type: number
+          format: float
+        fixed_price_city:
+          type: number
+          format: float
+        description:
+          type: string
+        image_url:
+          type: string
+        is_active:
+          type: boolean
+    PaymentWebhookRequest:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum: [stripe, mollie]
+        event_type:
+          type: string
+        payment_id:
+          type: string
+        booking_reference:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+        status:
+          type: string
+        metadata:
+          type: object
+    WebhookResponse:
+      type: object
+      properties:
+        received:
+          type: boolean
+        booking_reference:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+      required:
+        - error
+        - message
